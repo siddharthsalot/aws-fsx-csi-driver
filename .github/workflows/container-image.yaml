@@ -39,7 +39,6 @@ jobs:
             GIT_TAG=$BRANCH_OR_TAG
           fi
           echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
-          echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> $GITHUB_ENV
           echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
       - name: Push manifest list containing amazon linux based images to Docker Hub
         run: |
