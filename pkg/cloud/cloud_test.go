@@ -26,7 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/fsx"
 	"github.com/golang/mock/gomock"
-	"github.com/kubernetes-sigs/aws-fsx-csi-driver/pkg/cloud/mocks"
+	"sigs.k8s.io/aws-fsx-csi-driver/pkg/cloud/mocks"
 )
 
 func TestCreateFileSystem(t *testing.T) {
@@ -51,6 +51,7 @@ func TestCreateFileSystem(t *testing.T) {
 		dataCompressionTypeLZ4              = "LZ4"
 		weeklyMaintenanceStartTime          = "7:09:00"
 		fileSystemTypeVersion               = "2.12"
+		extraTags                           = []string{"key1=value1", "key2=value2"}
 	)
 	testCases := []struct {
 		name     string
@@ -71,6 +72,7 @@ func TestCreateFileSystem(t *testing.T) {
 					SecurityGroupIds:           securityGroupIds,
 					FileSystemTypeVersion:      fileSystemTypeVersion,
 					WeeklyMaintenanceStartTime: weeklyMaintenanceStartTime,
+					ExtraTags:                  extraTags,
 				}
 
 				output := &fsx.CreateFileSystemOutput{

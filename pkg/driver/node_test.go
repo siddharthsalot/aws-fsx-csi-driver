@@ -23,7 +23,7 @@ import (
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/mock/gomock"
-	"github.com/kubernetes-sigs/aws-fsx-csi-driver/pkg/driver/mocks"
+	"sigs.k8s.io/aws-fsx-csi-driver/pkg/driver/mocks"
 )
 
 func TestNodePublishVolume(t *testing.T) {
@@ -72,6 +72,7 @@ func TestNodePublishVolume(t *testing.T) {
 				}
 
 				mockMounter.EXPECT().MakeDir(gomock.Eq(targetPath)).Return(nil)
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(true, nil)
 				mockMounter.EXPECT().Mount(gomock.Eq(source), gomock.Eq(targetPath), gomock.Eq("lustre"), gomock.Any()).Return(nil)
 				_, err := driver.NodePublishVolume(ctx, req)
 				if err != nil {
@@ -104,6 +105,7 @@ func TestNodePublishVolume(t *testing.T) {
 				}
 
 				mockMounter.EXPECT().MakeDir(gomock.Eq(targetPath)).Return(nil)
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(true, nil)
 				mockMounter.EXPECT().Mount(gomock.Eq(source), gomock.Eq(targetPath), gomock.Eq("lustre"), gomock.Any()).Return(nil)
 				_, err := driver.NodePublishVolume(ctx, req)
 				if err != nil {
@@ -139,6 +141,7 @@ func TestNodePublishVolume(t *testing.T) {
 				}
 
 				mockMounter.EXPECT().MakeDir(gomock.Eq(targetPath)).Return(nil)
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(true, nil)
 				mockMounter.EXPECT().Mount(gomock.Eq(source), gomock.Eq(targetPath), gomock.Eq("lustre"), gomock.Eq([]string{"ro"})).Return(nil)
 				_, err := driver.NodePublishVolume(ctx, req)
 				if err != nil {
@@ -182,6 +185,7 @@ func TestNodePublishVolume(t *testing.T) {
 				}
 
 				mockMounter.EXPECT().MakeDir(gomock.Eq(targetPath)).Return(nil)
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(true, nil)
 				mockMounter.EXPECT().Mount(gomock.Eq(source), gomock.Eq(targetPath), gomock.Eq("lustre"), gomock.Eq([]string{"flock"})).Return(nil)
 				_, err := driver.NodePublishVolume(ctx, req)
 				if err != nil {
@@ -371,9 +375,9 @@ func TestNodePublishVolume(t *testing.T) {
 				}
 
 				source := dnsname + "@tcp:/" + mountname
-
 				err := fmt.Errorf("failed to Mount")
 				mockMounter.EXPECT().MakeDir(gomock.Eq(targetPath)).Return(nil)
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(true, nil)
 				mockMounter.EXPECT().Mount(gomock.Eq(source), gomock.Eq(targetPath), gomock.Eq("lustre"), gomock.Any()).Return(err)
 
 				_, err = driver.NodePublishVolume(ctx, req)
@@ -420,7 +424,33 @@ func TestNodeUnpublishVolume(t *testing.T) {
 					TargetPath: targetPath,
 				}
 
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(false, nil)
 				mockMounter.EXPECT().Unmount(gomock.Eq(targetPath)).Return(nil)
+
+				_, err := driver.NodeUnpublishVolume(ctx, req)
+				if err != nil {
+					t.Fatalf("NodeUnpublishVolume is failed: %v", err)
+				}
+			},
+		},
+		{
+			name: "success: target already unmounted",
+			testFunc: func(t *testing.T) {
+				mockCtrl := gomock.NewController(t)
+				mockMounter := mocks.NewMockMounter(mockCtrl)
+				driver := &Driver{
+					endpoint: endpoint,
+					nodeID:   nodeID,
+					mounter:  mockMounter,
+				}
+
+				ctx := context.Background()
+				req := &csi.NodeUnpublishVolumeRequest{
+					VolumeId:   "volumeId",
+					TargetPath: targetPath,
+				}
+
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(true, nil)
 
 				_, err := driver.NodeUnpublishVolume(ctx, req)
 				if err != nil {
@@ -467,6 +497,7 @@ func TestNodeUnpublishVolume(t *testing.T) {
 					TargetPath: targetPath,
 				}
 
+				mockMounter.EXPECT().IsLikelyNotMountPoint(gomock.Eq(targetPath)).Return(false, nil)
 				mountErr := fmt.Errorf("Unmount failed")
 				mockMounter.EXPECT().Unmount(gomock.Eq(targetPath)).Return(mountErr)
 

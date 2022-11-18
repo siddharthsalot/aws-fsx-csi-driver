@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION=v0.8.1
+VERSION=v0.8.3
 
 PKG=github.com/kubernetes-sigs/aws-fsx-csi-driver
 GIT_COMMIT?=$(shell git rev-parse HEAD)
@@ -61,6 +61,7 @@ all: all-image-docker
 .PHONY: all-push
 all-push:
 	docker buildx build \
+		--no-cache-filter=linux-amazon \
 		--platform=$(PLATFORM) \
 		--progress=plain \
 		--target=$(OS)-$(OSVERSION) \
@@ -79,6 +80,7 @@ sub-image-%:
 image: .image-$(TAG)-$(OS)-$(ARCH)-$(OSVERSION)
 .image-$(TAG)-$(OS)-$(ARCH)-$(OSVERSION):
 	docker buildx build \
+		--no-cache-filter=linux-amazon \
 		--platform=$(OS)/$(ARCH) \
 		--progress=plain \
 		--target=$(OS)-$(OSVERSION) \
@@ -116,7 +118,7 @@ test-e2e:
 	AWS_REGION=us-west-2 \
 	AWS_AVAILABILITY_ZONES=us-west-2a \
 	NODE_COUNT=1 \
-	TEST_PATH=./tests/e2e/... \
+	TEST_PATH=./tests/e2e/ \
 	GINKGO_FOCUS=".*" \
 	GINKGO_SKIP="subPath.should.be.able.to.unmount.after.the.subpath.directory.is.deleted|\[Disruptive\]|\[Serial\]" \
 	./hack/e2e/run.sh
