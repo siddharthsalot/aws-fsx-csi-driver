@@ -21,7 +21,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@master
         with:
-          role-to-assume: arn:aws:iam::664215443545:role/LustreCSIDriverImagePublisherRole
+          role-to-assume: arn:aws:iam::925553864330:role/LustreCSIDriverImagePublisherRole
           aws-region: ${{ env.REGION }}
       - name: Login to Amazon ECR Public
         id: login-ecr-public
@@ -32,7 +32,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: fsx-csi-driver
-          REPOSITORY: aws-fsx-csi-driver
+          REPOSITORY: g5x7u5l2
         run: |
           BRANCH_OR_TAG=$(echo $GITHUB_REF | cut -d'/' -f3)
           if [ "$BRANCH_OR_TAG" = "master" ]; then
