@@ -43,4 +43,3 @@ jobs:
           export REGISTRY=$REGISTRY/$REGISTRY_ALIAS
           export TAG=$GIT_TAG
           make all-push
-
